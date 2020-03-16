@@ -1,0 +1,4 @@
+[submodule "submodules/NuGet.Client"]
+	path = submodules/NuGet.Client
+	url = https://github.com/NuGet/NuGet.Client.git
+	branch = jver-wasm

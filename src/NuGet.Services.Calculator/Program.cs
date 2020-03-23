@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NuGet.Common;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
-using NuGet.Services.Calculator.Services;
+using NuGet.Services.Calculator.Logic;
 
 namespace NuGet.Services.Calculator
 {
@@ -19,7 +19,7 @@ namespace NuGet.Services.Calculator
             builder.RootComponents.Add<App>("app");
 
             builder.Services.AddTransient<IHttpCacheUtility, LocalStorageHttpCacheUtility>();
-            builder.Services.AddSingleton<IConcurrencyUtility, InMemoryConcurrencyUtilities>();
+            builder.Services.AddSingleton<IConcurrencyUtility, InMemoryConcurrencyUtility>();
             builder.Services.AddTransient<VersionRangeCalculator>();
             builder.Services.AddSingleton(p =>
             {

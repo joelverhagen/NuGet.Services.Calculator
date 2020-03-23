@@ -7,7 +7,7 @@ using NuGet.Configuration;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 
-namespace NuGet.Services.Calculator.Services
+namespace NuGet.Services.Calculator.Logic
 {
     public class CustomHttpSourceResourceProvider : ResourceProvider
     {

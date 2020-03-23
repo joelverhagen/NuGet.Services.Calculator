@@ -1,0 +1,115 @@
+﻿@page "/find-best-version-match"
+@using Microsoft.AspNetCore.WebUtilities
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject VersionRangeCalculator Service
+
+<h1>Find Best Version Match</h1>
+
+<EditForm EditContext="@editContext" OnValidSubmit="HandleValidSubmitAsync">
+    <div class="form-group">
+        <label for="versionRange">Version Range</label>
+        <InputText class="form-control" id="versionRange" placeholder="[1.0.0, )" @bind-Value="input.VersionRange" />
+        <ValidationMessage For="@(() => input.VersionRange)" class="invalid-feedback" />
+    </div>
+    <div class="form-group">
+        <label for="versions">Versions</label>
+        <InputTextArea class="form-control" id="versions" placeholder="1.1.0" rows="5" @bind-Value="input.Versions" />
+        <ValidationMessage For="@(() => input.Versions)" class="invalid-feedback" />
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </div>
+</EditForm>
+
+@if (output != null && output.InputStatus == InputStatus.Valid)
+{
+    if (output.BestMatch != null)
+    {
+        <div class="alert alert-success" role="alert">
+            The <code>@(output.BestMatch.ToNormalizedString())</code> version is the best match to the
+            <code>@output.VersionRange.ToNormalizedString()</code> version range.
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning" role="alert">
+            None of the versions satisfy the <code>@output.VersionRange.ToNormalizedString()</code> version range.
+        </div>
+    }
+
+    <div class="alert alert-info" role="alert">
+        <p>The following versions were considered, <b>displayed in the order of precedence</b>:</p>
+        <ol class="list-unstyled">
+            @foreach (var input in output.Versions)
+            {
+                <li>
+                    @if (input.Satisfies)
+                    {
+                        <span class="oi oi-check" aria-hidden="true"></span>
+                    }
+                    else
+                    {
+                        <span class="oi oi-x" aria-hidden="true"></span>
+                    }
+                    <code>@input.Version.ToNormalizedString()</code>
+                    @if (input.Satisfies)
+                    {
+                        @:satisfies
+                    }
+                    else
+                    {
+                        @:does not satisfy
+                    }
+                </li>
+            }
+        </ol>
+    </div>
+}
+
+@code {
+    private EditContext editContext;
+    private FindBestVersionMatchInput input;
+    private FindBestVersionMatchOutput output;
+    private string localPath;
+
+    protected override void OnInitialized()
+    {
+        input = new FindBestVersionMatchInput();
+        editContext = new EditContext(input);
+        editContext.AddDataAnnotationsValidation();
+
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        localPath = uri.LocalPath;
+        var query = QueryHelpers.ParseQuery(uri.Query);
+
+        if (query.TryGetValue("versionRange", out var versionRange))
+        {
+            input.VersionRange = versionRange.First();
+            editContext.NotifyFieldChanged(editContext.Field(nameof(FindBestVersionMatchInput.VersionRange)));
+        }
+
+        if (query.TryGetValue("versions", out var versions))
+        {
+            input.Versions = versions.First();
+            editContext.NotifyFieldChanged(editContext.Field(nameof(FindBestVersionMatchInput.Versions)));
+        }
+
+        if (editContext.IsModified() && editContext.Validate())
+        {
+            output = Service.FindBestVersionMatch(input);
+        }
+    }
+
+    private async Task HandleValidSubmitAsync()
+    {
+        var pathAndQuery = QueryHelpers.AddQueryString(localPath, new Dictionary<string, string>
+        {
+            { "versionRange", input.VersionRange },
+            { "versions", input.Versions },
+        });
+        await JSRuntime.InvokeVoidAsync("history.replaceState", null, string.Empty, pathAndQuery);
+
+        output = Service.FindBestVersionMatch(input);
+    }
+}

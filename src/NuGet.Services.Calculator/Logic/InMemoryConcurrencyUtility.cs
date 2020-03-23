@@ -4,9 +4,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 
-namespace NuGet.Services.Calculator.Services
+namespace NuGet.Services.Calculator.Logic
 {
-    public class InMemoryConcurrencyUtilities : IConcurrencyUtility
+    public class InMemoryConcurrencyUtility : IConcurrencyUtility
     {
         private readonly ConcurrentDictionary<string, SemaphoreSlim> _locks
             = new ConcurrentDictionary<string, SemaphoreSlim>(StringComparer.OrdinalIgnoreCase);

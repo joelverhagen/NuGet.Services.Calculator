@@ -1,0 +1,32 @@
+﻿@page "/get-package-versions"
+@inject VersionRangeCalculator Service
+
+<h1>Get Package Versions</h1>
+
+<form method="get">
+    <div class="form-group">
+        <label for="packageId">Package ID</label>
+        <input type="text" class="form-control" id="packageId" @bind="packageId" />
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary" @onclick="OnClickAsync" @onclick:preventDefault>Go</button>
+    </div>
+</form>
+
+<div>
+    @foreach (var version in versions)
+    {
+        <span class="badge badge-light">@version</span>
+    }
+</div>
+
+@code {
+    private string packageId;
+    private List<string> versions = new List<string>();
+
+    private async Task OnClickAsync()
+    {
+        var output = await Service.GetVersionsAsync(packageId);
+        versions = output.Select(x => x.ToNormalizedString()).ToList();
+    }
+}

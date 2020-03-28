@@ -196,3 +196,7 @@ app {
     margin: 6px 0px;
     font-weight: normal;
 }
+
+.input-code {
+    font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}

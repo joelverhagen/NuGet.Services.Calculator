@@ -10,12 +10,12 @@
 <EditForm EditContext="@_editContext" OnValidSubmit="HandleValidSubmitAsync">
     <div class="form-group">
         <label for="versionRange">Version Range</label>
-        <InputText class="form-control" id="versionRange" placeholder="[1.0.0, )" @bind-Value="_input.VersionRange" />
+        <InputText class="form-control input-code" id="versionRange" placeholder="[1.0.0, )" @bind-Value="_input.VersionRange" />
         <ValidationMessage For="@(() => _input.VersionRange)" class="invalid-feedback" />
     </div>
     <div class="form-group">
         <label for="versions">Versions</label>
-        <InputTextArea class="form-control" id="versions" placeholder="1.1.0" rows="5" @bind-Value="_input.Versions" />
+        <InputTextArea class="form-control input-code" id="versions" placeholder="1.1.0" rows="5" @bind-Value="_input.Versions" />
         <ValidationMessage For="@(() => _input.Versions)" class="invalid-feedback" />
     </div>
     <div class="form-group">

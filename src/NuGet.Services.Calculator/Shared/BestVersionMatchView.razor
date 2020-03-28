@@ -1,46 +1,53 @@
-﻿@if (Result.BestMatch != null)
+﻿@if (Model.BestMatch != null)
 {
     <div class="alert alert-success" role="alert">
-        The <code>@(Result.BestMatch.ToNormalizedString())</code> version is the best match to the
-        <code>@Result.VersionRange.ToNormalizedString()</code> version range.
+        The version <code class="badge badge-code badge-success">@Model.BestMatch.ToNormalizedString()</code> is the best match for the
+        version range <code class="badge badge-code badge-light">@Model.VersionRange.ToNormalizedString()</code>.
     </div>
 }
 else
 {
-    <div class="alert alert-warning" role="alert">
-        None of the versions satisfy the <code>@Result.VersionRange.ToNormalizedString()</code> version range.
-    </div>
+<div class="alert alert-warning" role="alert">
+    None of the versions satisfy the version range <code class="badge badge-code badge-light">@Model.VersionRange.ToNormalizedString()</code>.
+</div>
 }
 
-<div class="alert alert-info" role="alert">
-    <p>The following versions were considered, <b>displayed in the order of precedence</b>:</p>
-    <ol class="list-unstyled">
-        @foreach (var input in Result.Versions)
+<p>The following versions were considered, displayed in the order of precedence:</p>
+<ol class="list-inline">
+    @foreach (var version in Model.Versions)
+    {
+        string badgeClass;
+        string iconClass;
+        string iconTitle;
+        if (version.Version == Model.BestMatch)
         {
-            <li>
-                @if (input.Satisfies)
-                {
-                    <span class="oi oi-check" aria-hidden="true"></span>
-                }
-                else
-                {
-                    <span class="oi oi-x" aria-hidden="true"></span>
-                }
-                <code>@input.Version.ToNormalizedString()</code>
-                @if (input.Satisfies)
-                {
-                    @:satisfies
-                }
-                else
-                {
-                    @:does not satisfy
-                }
-            </li>
+            badgeClass = "badge-success";
+            iconClass = "oi-check";
+            iconTitle = "best match and compatible";
         }
-    </ol>
-</div>
+        else if (version.Satisfies)
+        {
+            badgeClass = "badge-info";
+            iconClass = "oi-check";
+            iconTitle = "compatible";
+        }
+        else
+        {
+            badgeClass = "badge-light";
+            iconClass = "oi-x";
+            iconTitle = "incompatible";
+        }
+
+        <li class="list-inline-item">
+            <code class="badge badge-code @badgeClass">
+                <span class="oi @iconClass" aria-hidden="true" title="@iconTitle"></span>
+                @version.Version.ToNormalizedString()
+            </code>
+        </li>
+    }
+</ol>
 
 @code {
     [Parameter]
-    public BestVersionMatch Result { get; set; }
+    public BestVersionMatch Model { get; set; }
 }

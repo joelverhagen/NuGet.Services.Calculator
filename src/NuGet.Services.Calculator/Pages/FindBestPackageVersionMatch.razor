@@ -10,12 +10,12 @@
 <EditForm EditContext="@_editContext" OnValidSubmit="HandleValidSubmitAsync">
     <div class="form-group">
         <label for="packageId">Package ID</label>
-        <InputText class="form-control" id="packageId" placeholder="NuGet.Versioning" @bind-Value="_input.PackageId" />
+        <InputText class="form-control" id="packageId" @bind-Value="_input.PackageId" />
         <ValidationMessage For="@(() => _input.PackageId)" class="invalid-feedback" />
     </div>
     <div class="form-group">
         <label for="versions">Version Range</label>
-        <InputText class="form-control" id="versionRange" placeholder="[4.3.0, )" @bind-Value="_input.VersionRange" />
+        <InputText class="form-control" id="versionRange" @bind-Value="_input.VersionRange" />
         <ValidationMessage For="@(() => _input.VersionRange)" class="invalid-feedback" />
     </div>
     <div class="form-group">
@@ -27,12 +27,12 @@
 {
     if (_output.Result.Versions.Any())
     {
-        <BestVersionMatchView Result="_output.Result" />
+        <BestVersionMatchView Model="_output.Result" />
     }
     else
     {
         <div class="alert alert-warning" role="alert">
-            The package ID <code>@(_output.Input.PackageId)</code> does not exist.
+            The package ID <span class="badge badge-code badge-light">@(_output.Input.PackageId)</span> does not exist.
         </div>
     }
 }
@@ -44,7 +44,11 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _input = new FindBestPackageVersionMatchInput();
+        _input = new FindBestPackageVersionMatchInput
+        {
+            PackageId = "NuGet.Versioning",
+            VersionRange = "[4.3.0, 5.0.0)",
+        };
         _editContext = new EditContext(_input);
         _editContext.AddDataAnnotationsValidation();
 

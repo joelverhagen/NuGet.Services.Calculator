@@ -182,11 +182,17 @@ app {
     }
 }
 
-code {
-    padding: 2px 4px;
-    background-color: #f9f2f4;
+.oi {
+    top: 2px;
 }
 
-oi {
-    top: 3px;
+.badge-light {
+    background-color: #e9eaeb
+}
+
+.badge-code {
+    padding: 6px 8px 8px 8px;
+    font-size: 100%;
+    margin: 6px 0px;
+    font-weight: normal;
 }

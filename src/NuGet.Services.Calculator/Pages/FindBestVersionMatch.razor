@@ -25,47 +25,7 @@
 
 @if (_output != null && _output.InputStatus == InputStatus.Valid)
 {
-    if (_output.BestMatch != null)
-    {
-        <div class="alert alert-success" role="alert">
-            The <code>@(_output.BestMatch.ToNormalizedString())</code> version is the best match to the
-            <code>@_output.VersionRange.ToNormalizedString()</code> version range.
-        </div>
-    }
-    else
-    {
-        <div class="alert alert-warning" role="alert">
-            None of the versions satisfy the <code>@_output.VersionRange.ToNormalizedString()</code> version range.
-        </div>
-    }
-
-    <div class="alert alert-info" role="alert">
-        <p>The following versions were considered, <b>displayed in the order of precedence</b>:</p>
-        <ol class="list-unstyled">
-            @foreach (var input in _output.Versions)
-            {
-                <li>
-                    @if (input.Satisfies)
-                    {
-                        <span class="oi oi-check" aria-hidden="true"></span>
-                    }
-                    else
-                    {
-                        <span class="oi oi-x" aria-hidden="true"></span>
-                    }
-                    <code>@input.Version.ToNormalizedString()</code>
-                    @if (input.Satisfies)
-                    {
-                        @:satisfies
-                    }
-                    else
-                    {
-                        @:does not satisfy
-                    }
-                </li>
-            }
-        </ol>
-    </div>
+    <BestVersionMatchView Result="_output.Result" />
 }
 
 @code {

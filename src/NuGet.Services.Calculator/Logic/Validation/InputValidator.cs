@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using NuGet.Packaging;
 using NuGet.Versioning;
 
 namespace NuGet.Services.Calculator.Logic
@@ -60,6 +61,25 @@ namespace NuGet.Services.Calculator.Logic
             }
 
             return Validated.Valid<IReadOnlyList<NuGetVersion>>(output);
+        }
+
+        public static Validated<string> PackageId(object value)
+        {
+            var validatedString = String(value);
+            if (!validatedString.IsValid)
+            {
+                return validatedString;
+            }
+
+            try
+            {
+                PackageIdValidator.ValidatePackageId(validatedString.Data);
+                return validatedString;
+            }
+            catch (Exception ex)
+            {
+                return Validated.Invalid<string>(ex);
+            }
         }
 
         private static Validated<string> String(object value)

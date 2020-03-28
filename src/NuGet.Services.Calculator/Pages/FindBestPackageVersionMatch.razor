@@ -1,0 +1,84 @@
+﻿@page "/package-versions"
+@using Microsoft.AspNetCore.WebUtilities
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject VersionRangeCalculator Service
+
+<Title>Package Versions - NuGet Calculator</Title>
+<h1>Package Versions</h1>
+
+<EditForm EditContext="@_editContext" OnValidSubmit="HandleValidSubmitAsync">
+    <div class="form-group">
+        <label for="packageId">Package ID</label>
+        <InputText class="form-control" id="packageId" placeholder="NuGet.Versioning" @bind-Value="_input.PackageId" />
+        <ValidationMessage For="@(() => _input.PackageId)" class="invalid-feedback" />
+    </div>
+    <div class="form-group">
+        <label for="versions">Version Range</label>
+        <InputText class="form-control" id="versionRange" placeholder="[4.3.0, )" @bind-Value="_input.VersionRange" />
+        <ValidationMessage For="@(() => _input.VersionRange)" class="invalid-feedback" />
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </div>
+</EditForm>
+
+@if (_output != null && _output.InputStatus == InputStatus.Valid)
+{
+    if (_output.Result.Versions.Any())
+    {
+        <BestVersionMatchView Result="_output.Result" />
+    }
+    else
+    {
+        <div class="alert alert-warning" role="alert">
+            The package ID <code>@(_output.Input.PackageId)</code> does not exist.
+        </div>
+    }
+}
+
+@code {
+    private EditContext _editContext;
+    private FindBestPackageVersionMatchInput _input;
+    private FindBestPackageVersionMatchOutput _output;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _input = new FindBestPackageVersionMatchInput();
+        _editContext = new EditContext(_input);
+        _editContext.AddDataAnnotationsValidation();
+
+        var currentUri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        var currentQuery = QueryHelpers.ParseQuery(currentUri.Query);
+
+        if (currentQuery.TryGetValue("packageId", out var packageId))
+        {
+            _input.PackageId = packageId.First();
+            _editContext.NotifyFieldChanged(_editContext.Field(nameof(FindBestPackageVersionMatchInput.PackageId)));
+        }
+
+        if (currentQuery.TryGetValue("versionRange", out var versionRange))
+        {
+            _input.VersionRange = versionRange.First();
+            _editContext.NotifyFieldChanged(_editContext.Field(nameof(FindBestVersionMatchInput.VersionRange)));
+        }
+
+        if (_editContext.IsModified() && _editContext.Validate())
+        {
+            _output = await Service.FindBestPackageVersionMatchAsync(_input, CancellationToken.None);
+        }
+    }
+
+    private async Task HandleValidSubmitAsync()
+    {
+        var localPath = new Uri(NavigationManager.Uri).LocalPath;
+        var pathAndQuery = QueryHelpers.AddQueryString(localPath, new Dictionary<string, string>
+{
+            { "packageId", _input.PackageId },
+            { "versionRange", _input.VersionRange },
+        });
+        await JSRuntime.InvokeVoidAsync("history.replaceState", null, string.Empty, pathAndQuery);
+
+        _output = await Service.FindBestPackageVersionMatchAsync(_input, CancellationToken.None);
+    }
+}

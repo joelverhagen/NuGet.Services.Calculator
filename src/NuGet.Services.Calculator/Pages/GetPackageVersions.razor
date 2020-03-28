@@ -1,12 +1,13 @@
 ﻿@page "/get-package-versions"
 @inject VersionRangeCalculator Service
 
+<Title>Get Package Versions - NuGet Calculator</Title>
 <h1>Get Package Versions</h1>
 
 <form method="get">
     <div class="form-group">
         <label for="packageId">Package ID</label>
-        <input type="text" class="form-control" id="packageId" @bind="packageId" />
+        <input type="text" class="form-control" id="packageId" @bind="_packageId" />
     </div>
     <div class="form-group">
         <button type="submit" class="btn btn-primary" @onclick="OnClickAsync" @onclick:preventDefault>Go</button>
@@ -14,19 +15,19 @@
 </form>
 
 <div>
-    @foreach (var version in versions)
+    @foreach (var version in _versions)
     {
         <span class="badge badge-light">@version</span>
     }
 </div>
 
 @code {
-    private string packageId;
-    private List<string> versions = new List<string>();
+    private string _packageId;
+    private List<string> _versions = new List<string>();
 
     private async Task OnClickAsync()
     {
-        var output = await Service.GetVersionsAsync(packageId);
-        versions = output.Select(x => x.ToNormalizedString()).ToList();
+        var output = await Service.GetVersionsAsync(_packageId);
+        _versions = output.Select(x => x.ToNormalizedString()).ToList();
     }
 }

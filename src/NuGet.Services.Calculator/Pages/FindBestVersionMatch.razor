@@ -4,44 +4,45 @@
 @inject IJSRuntime JSRuntime
 @inject VersionRangeCalculator Service
 
+<Title>Find Best Version Match - NuGet Calculator</Title>
 <h1>Find Best Version Match</h1>
 
-<EditForm EditContext="@editContext" OnValidSubmit="HandleValidSubmitAsync">
+<EditForm EditContext="@_editContext" OnValidSubmit="HandleValidSubmitAsync">
     <div class="form-group">
         <label for="versionRange">Version Range</label>
-        <InputText class="form-control" id="versionRange" placeholder="[1.0.0, )" @bind-Value="input.VersionRange" />
-        <ValidationMessage For="@(() => input.VersionRange)" class="invalid-feedback" />
+        <InputText class="form-control" id="versionRange" placeholder="[1.0.0, )" @bind-Value="_input.VersionRange" />
+        <ValidationMessage For="@(() => _input.VersionRange)" class="invalid-feedback" />
     </div>
     <div class="form-group">
         <label for="versions">Versions</label>
-        <InputTextArea class="form-control" id="versions" placeholder="1.1.0" rows="5" @bind-Value="input.Versions" />
-        <ValidationMessage For="@(() => input.Versions)" class="invalid-feedback" />
+        <InputTextArea class="form-control" id="versions" placeholder="1.1.0" rows="5" @bind-Value="_input.Versions" />
+        <ValidationMessage For="@(() => _input.Versions)" class="invalid-feedback" />
     </div>
     <div class="form-group">
         <button type="submit" class="btn btn-primary">Submit</button>
     </div>
 </EditForm>
 
-@if (output != null && output.InputStatus == InputStatus.Valid)
+@if (_output != null && _output.InputStatus == InputStatus.Valid)
 {
-    if (output.BestMatch != null)
+    if (_output.BestMatch != null)
     {
         <div class="alert alert-success" role="alert">
-            The <code>@(output.BestMatch.ToNormalizedString())</code> version is the best match to the
-            <code>@output.VersionRange.ToNormalizedString()</code> version range.
+            The <code>@(_output.BestMatch.ToNormalizedString())</code> version is the best match to the
+            <code>@_output.VersionRange.ToNormalizedString()</code> version range.
         </div>
     }
     else
     {
         <div class="alert alert-warning" role="alert">
-            None of the versions satisfy the <code>@output.VersionRange.ToNormalizedString()</code> version range.
+            None of the versions satisfy the <code>@_output.VersionRange.ToNormalizedString()</code> version range.
         </div>
     }
 
     <div class="alert alert-info" role="alert">
         <p>The following versions were considered, <b>displayed in the order of precedence</b>:</p>
         <ol class="list-unstyled">
-            @foreach (var input in output.Versions)
+            @foreach (var input in _output.Versions)
             {
                 <li>
                     @if (input.Satisfies)
@@ -68,48 +69,47 @@
 }
 
 @code {
-    private EditContext editContext;
-    private FindBestVersionMatchInput input;
-    private FindBestVersionMatchOutput output;
-    private string localPath;
+    private EditContext _editContext;
+    private FindBestVersionMatchInput _input;
+    private FindBestVersionMatchOutput _output;
 
     protected override void OnInitialized()
     {
-        input = new FindBestVersionMatchInput();
-        editContext = new EditContext(input);
-        editContext.AddDataAnnotationsValidation();
+        _input = new FindBestVersionMatchInput();
+        _editContext = new EditContext(_input);
+        _editContext.AddDataAnnotationsValidation();
 
-        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
-        localPath = uri.LocalPath;
-        var query = QueryHelpers.ParseQuery(uri.Query);
+        var currentUri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        var currentQuery = QueryHelpers.ParseQuery(currentUri.Query);
 
-        if (query.TryGetValue("versionRange", out var versionRange))
+        if (currentQuery.TryGetValue("versionRange", out var versionRange))
         {
-            input.VersionRange = versionRange.First();
-            editContext.NotifyFieldChanged(editContext.Field(nameof(FindBestVersionMatchInput.VersionRange)));
+            _input.VersionRange = versionRange.First();
+            _editContext.NotifyFieldChanged(_editContext.Field(nameof(FindBestVersionMatchInput.VersionRange)));
         }
 
-        if (query.TryGetValue("versions", out var versions))
+        if (currentQuery.TryGetValue("versions", out var versions))
         {
-            input.Versions = versions.First();
-            editContext.NotifyFieldChanged(editContext.Field(nameof(FindBestVersionMatchInput.Versions)));
+            _input.Versions = versions.First();
+            _editContext.NotifyFieldChanged(_editContext.Field(nameof(FindBestVersionMatchInput.Versions)));
         }
 
-        if (editContext.IsModified() && editContext.Validate())
+        if (_editContext.IsModified() && _editContext.Validate())
         {
-            output = Service.FindBestVersionMatch(input);
+            _output = Service.FindBestVersionMatch(_input);
         }
     }
 
     private async Task HandleValidSubmitAsync()
     {
+        var localPath = new Uri(NavigationManager.Uri).LocalPath;
         var pathAndQuery = QueryHelpers.AddQueryString(localPath, new Dictionary<string, string>
         {
-            { "versionRange", input.VersionRange },
-            { "versions", input.Versions },
+            { "versionRange", _input.VersionRange },
+            { "versions", _input.Versions },
         });
         await JSRuntime.InvokeVoidAsync("history.replaceState", null, string.Empty, pathAndQuery);
 
-        output = Service.FindBestVersionMatch(input);
+        _output = Service.FindBestVersionMatch(_input);
     }
 }

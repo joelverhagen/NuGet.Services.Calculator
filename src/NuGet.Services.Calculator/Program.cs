@@ -8,6 +8,7 @@ using NuGet.Common;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Services.Calculator.Logic;
+using Toolbelt.Blazor.Extensions.DependencyInjection;
 
 namespace NuGet.Services.Calculator
 {
@@ -41,6 +42,7 @@ namespace NuGet.Services.Calculator
                 .GetResourceAsync<FindPackageByIdResource>());
 
             builder.Services.AddBlazoredLocalStorage();
+            builder.Services.AddHeadElementHelper();
             builder.Services.AddBaseAddressHttpClient();
 
             await builder.Build().RunAsync();

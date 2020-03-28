@@ -1,4 +1,4 @@
-﻿@page "/package-versions"
+﻿@attribute [Microsoft.AspNetCore.Components.RouteAttribute(Routes.FindBestPackageVersionMatch)]
 @using Microsoft.AspNetCore.WebUtilities
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
@@ -20,6 +20,10 @@
     </div>
     <div class="form-group">
         <button type="submit" class="btn btn-primary">Submit</button>
+        @if (_output?.Result?.Versions?.Any() == true)
+        {
+            <button type="button" class="btn btn-secondary" @onclick="EditVersions">Edit Versions</button>
+        }
     </div>
 </EditForm>
 
@@ -73,11 +77,26 @@
         }
     }
 
+    private void EditVersions()
+    {
+        if (_output?.Result?.Versions?.Any() != true)
+        {
+            return;
+        }
+
+        var pathAndQuery = QueryHelpers.AddQueryString(Routes.FindBestVersionMatch, new Dictionary<string, string>
+        {
+            { "versionRange", _output.Result.VersionRange.OriginalString },
+            { "versions", string.Join("\r\n", _output.Result.Versions.Select(x => x.Version.ToNormalizedString())) },
+        });
+
+        NavigationManager.NavigateTo(pathAndQuery);
+    }
+
     private async Task HandleValidSubmitAsync()
     {
-        var localPath = new Uri(NavigationManager.Uri).LocalPath;
-        var pathAndQuery = QueryHelpers.AddQueryString(localPath, new Dictionary<string, string>
-{
+        var pathAndQuery = QueryHelpers.AddQueryString(Routes.FindBestPackageVersionMatch, new Dictionary<string, string>
+        {
             { "packageId", _input.PackageId },
             { "versionRange", _input.VersionRange },
         });

@@ -63,6 +63,7 @@ namespace NuGet.Services.Calculator.Logic
             }
 
             output.InputStatus = InputStatus.Valid;
+            output.PackageId = validatedPackageId.Data;
             output.Result = GetBestVersionMatch(validatedVersionRange.Data, versions.ToList());
 
             return output;

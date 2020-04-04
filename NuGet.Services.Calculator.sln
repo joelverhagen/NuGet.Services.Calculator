@@ -21,6 +21,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{397FD2C2-911
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "submodules", "submodules", "{DDE2C542-1BA6-44ED-83D8-55583773FF99}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{56338644-F347-465A-A632-9966ECF2F636}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Services.Calculator.Tests", "test\NuGet.Services.Calculator.Tests\NuGet.Services.Calculator.Tests.csproj", "{EF3800A5-1007-41AD-AE5C-C56B4ACF4CF7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +59,10 @@ Global
 		{D5D0FDCC-769F-48A6-9854-C9E2625EA941}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D5D0FDCC-769F-48A6-9854-C9E2625EA941}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D5D0FDCC-769F-48A6-9854-C9E2625EA941}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF3800A5-1007-41AD-AE5C-C56B4ACF4CF7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF3800A5-1007-41AD-AE5C-C56B4ACF4CF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF3800A5-1007-41AD-AE5C-C56B4ACF4CF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF3800A5-1007-41AD-AE5C-C56B4ACF4CF7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -67,6 +75,7 @@ Global
 		{63F3A6C8-F71E-4915-908C-2DDD569BE730} = {DDE2C542-1BA6-44ED-83D8-55583773FF99}
 		{325FADCE-77A5-467C-91E7-737739D5948F} = {DDE2C542-1BA6-44ED-83D8-55583773FF99}
 		{D5D0FDCC-769F-48A6-9854-C9E2625EA941} = {DDE2C542-1BA6-44ED-83D8-55583773FF99}
+		{EF3800A5-1007-41AD-AE5C-C56B4ACF4CF7} = {56338644-F347-465A-A632-9966ECF2F636}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DA4E2466-3686-4FBE-B324-12CF2CE17BA9}

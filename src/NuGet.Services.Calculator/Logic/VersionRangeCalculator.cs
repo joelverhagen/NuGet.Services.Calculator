@@ -105,7 +105,7 @@ namespace NuGet.Services.Calculator.Logic
             VersionRange versionRange,
             IReadOnlyList<NuGetVersion> inputVersions)
         {
-            var outputVersions = new List<VersionSatisfies>();
+            var outputVersions = new List<VersionCompatibility>();
             var output = new BestVersionMatch
             {
                 BestMatch = versionRange.FindBestMatch(inputVersions),
@@ -113,37 +113,24 @@ namespace NuGet.Services.Calculator.Logic
                 Versions = outputVersions,
             };
 
-            foreach (var version in inputVersions)
+            var remainingVersions = new List<NuGetVersion>(inputVersions);
+            while (remainingVersions.Any())
             {
-                outputVersions.Add(new VersionSatisfies(
-                    version,
-                    versionRange.Satisfies(version)));
+                var bestMatch = versionRange.FindBestMatch(remainingVersions);
+                if (bestMatch == null)
+                {
+                    break;
+                }
+
+                outputVersions.Add(new VersionCompatibility(bestMatch, isCompatible: true));
+                remainingVersions.Remove(bestMatch);
             }
 
-            outputVersions.Sort((a, b) => -1 * Compare(versionRange, a, b));
+            outputVersions.AddRange(remainingVersions
+                .OrderBy(v => v)
+                .Select(v => new VersionCompatibility(v, isCompatible: false)));
 
             return output;
-        }
-             
-        private int Compare(VersionRange versionRange, VersionSatisfies a, VersionSatisfies b)
-        {
-            var satisfiesComparison = a.Satisfies.CompareTo(b.Satisfies);
-            if (satisfiesComparison != 0)
-            {
-                return satisfiesComparison;
-            }
-            else if (versionRange.IsBetter(a.Version, b.Version))
-            {
-                return -1;
-            }
-            else if (versionRange.IsBetter(b.Version, a.Version))
-            {
-                return 1;
-            }
-            else
-            {
-                return a.Version.CompareTo(b.Version);
-            }
         }
 
         public async Task<IEnumerable<NuGetVersion>> GetVersionsAsync(string packageId, CancellationToken cancellationToken)

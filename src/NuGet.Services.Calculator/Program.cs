@@ -19,10 +19,9 @@ namespace NuGet.Services.Calculator
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("app");
 
-            builder.Services.AddTransient<IHttpCacheUtility, LocalStorageHttpCacheUtility>();
-            builder.Services.AddSingleton<IConcurrencyUtility, InMemoryConcurrencyUtility>();
-            builder.Services.AddTransient<VersionRangeCalculator>();
-            builder.Services.AddSingleton(p =>
+            builder.Services.AddScoped<IHttpCacheUtility, LocalStorageHttpCacheUtility>();
+            builder.Services.AddScoped<IConcurrencyUtility, InMemoryConcurrencyUtility>();
+            builder.Services.AddScoped(p =>
             {
                 var providers = Repository
                     .Provider
@@ -37,9 +36,11 @@ namespace NuGet.Services.Calculator
 
                 return Repository.CreateSource(providers, "https://api.nuget.org/v3/index.json");
             });
-            builder.Services.AddSingleton(p => p
+            builder.Services.AddScoped(p => p
                 .GetRequiredService<SourceRepository>()
                 .GetResourceAsync<FindPackageByIdResource>());
+
+            builder.Services.AddTransient<VersionRangeCalculator>();
 
             builder.Services.AddBlazoredLocalStorage();
             builder.Services.AddHeadElementHelper();

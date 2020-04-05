@@ -11,12 +11,14 @@ namespace NuGet.Services.Calculator.Logic
 {
     public class VersionRangeCalculator
     {
-        private readonly Task<FindPackageByIdResource> _resourceTask;
+        private readonly Task<PackageMetadataResource> _metadataResourceTask;
         private readonly StandardToNuGetLogger _nuGetLogger;
 
-        public VersionRangeCalculator(Task<FindPackageByIdResource> resourceTask, ILogger<VersionRangeCalculator> logger)
+        public VersionRangeCalculator(
+            Task<PackageMetadataResource> metadataResourceTask,
+            ILogger<VersionRangeCalculator> logger)
         {
-            _resourceTask = resourceTask ?? throw new ArgumentNullException(nameof(resourceTask));
+            _metadataResourceTask = metadataResourceTask ?? throw new ArgumentNullException(nameof(metadataResourceTask));
 
             if (logger == null)
             {
@@ -56,15 +58,26 @@ namespace NuGet.Services.Calculator.Logic
             }
 
             IEnumerable<NuGetVersion> versions;
+            HashSet<NuGetVersion> listed;
             using (var cache = new SourceCacheContext())
             {
-                var resource = await _resourceTask;
-                versions = await resource.GetAllVersionsAsync(input.PackageId, cache, _nuGetLogger, cancellationToken);
+                var resource = await _metadataResourceTask;
+                var metadata = await resource.GetMetadataAsync(
+                    input.PackageId,
+                    includePrerelease: true,
+                    includeUnlisted: true,
+                    cache,
+                    _nuGetLogger,
+                    cancellationToken);
+
+                listed = new HashSet<NuGetVersion>(metadata.Where(x => x.IsListed).Select(x => x.Identity.Version));
+                versions = metadata.Select(x => x.Identity.Version).ToList();
             }
 
             output.InputStatus = InputStatus.Valid;
             output.PackageId = validatedPackageId.Data;
-            output.Result = GetBestVersionMatch(validatedVersionRange.Data, versions.ToList());
+            output.ShowUnlisted = input.ShowUnlisted;
+            output.Result = GetBestVersionMatch(validatedVersionRange.Data, versions.ToList(), listed, output.ShowUnlisted);
 
             return output;
         }
@@ -97,19 +110,24 @@ namespace NuGet.Services.Calculator.Logic
             }
 
             output.InputStatus = InputStatus.Valid;
-            output.Result = GetBestVersionMatch(validatedVersionRange.Data, validatedVersions.Data);
+            output.Result = GetBestVersionMatch(
+                validatedVersionRange.Data,
+                validatedVersions.Data,
+                listed: null,
+                showUnlisted: true);
 
             return output;
         }
 
         private BestVersionMatch GetBestVersionMatch(
             VersionRange versionRange,
-            IReadOnlyList<NuGetVersion> inputVersions)
+            IReadOnlyList<NuGetVersion> inputVersions,
+            HashSet<NuGetVersion> listed,
+            bool showUnlisted)
         {
             var outputVersions = new List<VersionCompatibility>();
             var output = new BestVersionMatch
             {
-                BestMatch = versionRange.FindBestMatch(inputVersions),
                 VersionRange = versionRange,
                 Versions = outputVersions,
             };
@@ -117,30 +135,39 @@ namespace NuGet.Services.Calculator.Logic
             var remainingVersions = new List<NuGetVersion>(inputVersions);
             while (remainingVersions.Any())
             {
-                var bestMatch = versionRange.FindBestMatch(remainingVersions);
-                if (bestMatch == null)
+                var version = versionRange.FindBestMatch(remainingVersions);
+                if (version == null)
                 {
                     break;
                 }
 
-                outputVersions.Add(new VersionCompatibility(bestMatch, isCompatible: true));
-                remainingVersions.Remove(bestMatch);
+                var compatibility = new VersionCompatibility(
+                    version,
+                    isCompatible: true,
+                    isListed: listed?.Contains(version));
+
+                if (output.BestMatch == null)
+                {
+                    output.BestMatch = compatibility;
+                    outputVersions.Add(compatibility);
+                }
+                else if (showUnlisted || compatibility.IsListed != false)
+                {
+                    outputVersions.Add(compatibility);
+                }
+
+                remainingVersions.Remove(version);
             }
 
             outputVersions.AddRange(remainingVersions
-                .OrderBy(v => v)
-                .Select(v => new VersionCompatibility(v, isCompatible: false)));
+                .OrderBy(version => version)
+                .Select(version => new VersionCompatibility(
+                    version,
+                    isCompatible: false,
+                    isListed: listed?.Contains(version)))
+                .Where(version => showUnlisted || version.IsListed != false));
 
             return output;
-        }
-
-        public async Task<IEnumerable<NuGetVersion>> GetVersionsAsync(string packageId, CancellationToken cancellationToken)
-        {
-            using (var cache = new SourceCacheContext())
-            {
-                var resource = await _resourceTask;
-                return await resource.GetAllVersionsAsync(packageId, cache, _nuGetLogger, cancellationToken);
-            }
         }
     }
 }

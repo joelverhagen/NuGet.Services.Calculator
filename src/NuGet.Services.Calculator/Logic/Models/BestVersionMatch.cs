@@ -7,6 +7,6 @@ namespace NuGet.Services.Calculator.Logic
     {
         public VersionRange VersionRange { get; set; }
         public IReadOnlyList<VersionCompatibility> Versions { get; set; }
-        public NuGetVersion BestMatch { get; set; }
+        public VersionCompatibility BestMatch { get; set; }
     }
 }

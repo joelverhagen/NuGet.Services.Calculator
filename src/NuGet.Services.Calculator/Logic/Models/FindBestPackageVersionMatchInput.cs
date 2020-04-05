@@ -7,5 +7,7 @@
 
         [VersionRangeValidation]
         public string VersionRange { get; set; }
+
+        public bool ShowUnlisted { get; set; }
     }
 }

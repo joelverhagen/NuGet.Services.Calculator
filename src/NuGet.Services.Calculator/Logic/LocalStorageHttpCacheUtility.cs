@@ -27,7 +27,7 @@ namespace NuGet.Services.Calculator.Logic
             var memoryStream = new MemoryStream();
             await response.Content.CopyToAsync(memoryStream);
             memoryStream.Position = 0;
-            ensureValidContents(memoryStream);
+            ensureValidContents?.Invoke(memoryStream);
             await _localStorageService.SetItemAsync(
                 GetCacheKey(result.CacheFile),
                 new CacheEntry { Added = DateTimeOffset.Now, Contents = memoryStream.ToArray() });

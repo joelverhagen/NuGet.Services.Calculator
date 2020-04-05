@@ -1,15 +1,23 @@
 ﻿@if (Model.BestMatch != null)
 {
     <div class="alert alert-success" role="alert">
-        The version <code class="badge badge-code badge-success">@Model.BestMatch.ToNormalizedString()</code> is the best match for the
+        The version <code class="badge badge-code badge-success">@Model.BestMatch.Version.ToNormalizedString()</code> is the best match for the
         version range <code class="badge badge-code badge-light">@Model.VersionRange.ToNormalizedString()</code>.
     </div>
+
+    if (Model.BestMatch.IsListed == false)
+    {
+        <div class="alert alert-warning" role="alert">
+            The best match is unlisted. Unlisted versions are still available for NuGet restore but are hidden from
+            discovery.
+        </div>
+    }
 }
 else
 {
-<div class="alert alert-warning" role="alert">
-    None of the versions satisfy the version range <code class="badge badge-code badge-light">@Model.VersionRange.ToNormalizedString()</code>.
-</div>
+    <div class="alert alert-warning" role="alert">
+        None of the versions satisfy the version range <code class="badge badge-code badge-light">@Model.VersionRange.ToNormalizedString()</code>.
+    </div>
 }
 
 <p>The following versions were considered, displayed in the order of precedence:</p>
@@ -19,11 +27,11 @@ else
         string badgeClass;
         string iconClass;
         string iconTitle;
-        if (version.Version == Model.BestMatch)
+        if (version == Model.BestMatch)
         {
             badgeClass = "badge-success";
             iconClass = "oi-check";
-            iconTitle = "best match and compatible";
+            iconTitle = "best match";
         }
         else if (version.IsCompatible)
         {
@@ -36,6 +44,12 @@ else
             badgeClass = "badge-light";
             iconClass = "oi-x";
             iconTitle = "incompatible";
+        }
+
+        if (version.IsListed == false)
+        {
+            badgeClass += $" {badgeClass}-striped";
+            iconTitle += ", unlisted";
         }
 
         <li class="list-inline-item">

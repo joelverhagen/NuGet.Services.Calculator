@@ -34,6 +34,12 @@
         {
             <button type="button" class="btn btn-secondary" @onclick="EditVersions">Edit Versions</button>
         }
+        <div class="form-check form-check-inline">
+            <InputCheckbox class="form-check-input" id="showUnlisted" @bind-Value="_input.ShowUnlisted" />
+            <label class="form-check-label" for="showUnlisted">
+                Show unlisted versions
+            </label>
+        </div>
     </div>
 </EditForm>
 
@@ -63,6 +69,7 @@
         {
             PackageId = "NuGet.Versioning",
             VersionRange = "[4.3.0, 5.0.0)",
+            ShowUnlisted = false,
         };
         _editContext = new EditContext(_input);
         _editContext.AddDataAnnotationsValidation();
@@ -79,7 +86,13 @@
         if (currentQuery.TryGetValue("versionRange", out var versionRange))
         {
             _input.VersionRange = versionRange.First();
-            _editContext.NotifyFieldChanged(_editContext.Field(nameof(FindBestVersionMatchInput.VersionRange)));
+            _editContext.NotifyFieldChanged(_editContext.Field(nameof(FindBestPackageVersionMatchInput.VersionRange)));
+        }
+
+        if (currentQuery.TryGetValue("showUnlisted", out var rawShowUnlisted) && bool.TryParse(rawShowUnlisted, out var showUnlisted))
+        {
+            _input.ShowUnlisted = showUnlisted;
+            _editContext.NotifyFieldChanged(_editContext.Field(nameof(FindBestPackageVersionMatchInput.ShowUnlisted)));
         }
 
         if (_editContext.IsModified() && _editContext.Validate())
@@ -118,6 +131,7 @@
             {
                 { "packageId", _input.PackageId },
                 { "versionRange", _input.VersionRange },
+                { "showUnlisted", _input.ShowUnlisted.ToString().ToLowerInvariant() },
             });
             await JSRuntime.InvokeVoidAsync("history.replaceState", null, string.Empty, pathAndQuery);
 

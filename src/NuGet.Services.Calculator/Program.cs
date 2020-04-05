@@ -1,5 +1,3 @@
-using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -21,24 +19,10 @@ namespace NuGet.Services.Calculator
 
             builder.Services.AddScoped<IHttpCacheUtility, LocalStorageHttpCacheUtility>();
             builder.Services.AddScoped<IConcurrencyUtility, InMemoryConcurrencyUtility>();
-            builder.Services.AddScoped(p =>
-            {
-                var providers = Repository
-                    .Provider
-                    .GetCoreV3()
-                    .Concat(new[]
-                    {
-                        new Lazy<INuGetResourceProvider>(() => new CustomHttpHandlerResourceProvider()),
-                        new Lazy<INuGetResourceProvider>(() => new CustomHttpSourceResourceProvider(
-                            p.GetRequiredService<IHttpCacheUtility>(),
-                            p.GetRequiredService<IConcurrencyUtility>()))
-                    });
-
-                return Repository.CreateSource(providers, "https://api.nuget.org/v3/index.json");
-            });
-            builder.Services.AddScoped(p => p
-                .GetRequiredService<SourceRepository>()
-                .GetResourceAsync<FindPackageByIdResource>());
+            builder.Services.AddScoped(p => Repository.Factory.GetCustomRepository(
+                p.GetRequiredService<IHttpCacheUtility>(),
+                p.GetRequiredService<IConcurrencyUtility>()));
+            builder.Services.AddScoped(p => p.GetRequiredService<SourceRepository>().GetResourceAsync<PackageMetadataResource>());
 
             builder.Services.AddTransient<VersionRangeCalculator>();
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,6 +24,16 @@ namespace NuGet.Services.Calculator.Logic
             if (source.PackageSource.IsHttp)
             {
                 var clientHandler = new HttpClientHandler();
+
+                try
+                {
+                    clientHandler.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+                }
+                catch (PlatformNotSupportedException)
+                {
+                    // Assume the platform is handling the decompression.
+                }
+
                 var messageHandler = new ServerWarningLogHandler(clientHandler);
                 curResource = new HttpHandlerResourceV3(clientHandler, messageHandler);
             }

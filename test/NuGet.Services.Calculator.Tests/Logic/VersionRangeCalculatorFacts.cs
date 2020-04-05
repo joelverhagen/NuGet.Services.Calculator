@@ -5,8 +5,10 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NuGet.Protocol.Core.Types;
+using NuGet.Services.Calculator.Support;
 using NuGet.Versioning;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NuGet.Services.Calculator.Logic
 {
@@ -14,7 +16,7 @@ namespace NuGet.Services.Calculator.Logic
     {
         public class TheFindBestVersionMatchMethod : Facts
         {
-            public TheFindBestVersionMatchMethod()
+            public TheFindBestVersionMatchMethod(ITestOutputHelper output) : base(output)
             {
                 Input = new FindBestVersionMatchInput
                 {
@@ -48,7 +50,7 @@ namespace NuGet.Services.Calculator.Logic
 
                 var output = Target.FindBestVersionMatch(Input);
 
-                Assert.Equal(NuGetVersion.Parse("4.3.0"), output.Result.BestMatch);
+                Assert.Equal("4.3.0", output.Result.BestMatch.Version.ToNormalizedString());
             }
 
             [Fact]
@@ -58,7 +60,7 @@ namespace NuGet.Services.Calculator.Logic
 
                 var output = Target.FindBestVersionMatch(Input);
 
-                Assert.Equal(NuGetVersion.Parse("4.3.0"), output.Result.BestMatch);
+                Assert.Equal("4.3.0", output.Result.BestMatch.Version.ToNormalizedString());
             }
 
             [Fact]
@@ -207,16 +209,19 @@ namespace NuGet.Services.Calculator.Logic
 
         public abstract class Facts
         {
-            public Facts()
+            public Facts(ITestOutputHelper output)
             {
-                Resource = new Mock<FindPackageByIdResource>();
+                MetadataResource = new Mock<PackageMetadataResource>();
+                Logger = new XunitLogger<VersionRangeCalculator>(output);
 
                 Target = new VersionRangeCalculator(
-                    Task.FromResult(Resource.Object),
-                    Mock.Of<ILogger<VersionRangeCalculator>>());
+                    Task.FromResult(MetadataResource.Object),
+                    Logger);
             }
 
-            public Mock<FindPackageByIdResource> Resource { get; }
+            public Mock<FindPackageByIdResource> FindResource { get; }
+            public Mock<PackageMetadataResource> MetadataResource { get; }
+            public XunitLogger<VersionRangeCalculator> Logger { get; }
             public VersionRangeCalculator Target { get; }
         }
     }

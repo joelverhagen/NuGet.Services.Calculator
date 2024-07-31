@@ -27,7 +27,9 @@ namespace NuGet.Services.Calculator.Logic
 
                 try
                 {
+#pragma warning disable CA1416 // Validate platform compatibility
                     clientHandler.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+#pragma warning restore CA1416 // Validate platform compatibility
                 }
                 catch (PlatformNotSupportedException)
                 {

@@ -3,8 +3,8 @@
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 @inject VersionRangeCalculator Service
+@inject IServiceProvider ServiceProvider
 
-<Title>Package Versions - NuGet Calculator</Title>
 <h1>Package Versions</h1>
 
 <EditForm EditContext="@_editContext" OnValidSubmit="HandleValidSubmitAsync">
@@ -72,7 +72,7 @@
             ShowUnlisted = false,
         };
         _editContext = new EditContext(_input);
-        _editContext.AddDataAnnotationsValidation();
+        _editContext.EnableDataAnnotationsValidation(ServiceProvider);
 
         var currentUri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
         var currentQuery = QueryHelpers.ParseQuery(currentUri.Query);

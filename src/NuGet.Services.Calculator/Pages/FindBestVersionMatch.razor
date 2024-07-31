@@ -3,8 +3,8 @@
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 @inject VersionRangeCalculator Service
+@inject IServiceProvider ServiceProvider
 
-<Title>Find Best Version Match - NuGet Calculator</Title>
 <h1>Find Best Version Match</h1>
 
 <EditForm EditContext="@_editContext" OnValidSubmit="HandleValidSubmitAsync">
@@ -37,7 +37,7 @@
     {
         _input = new FindBestVersionMatchInput();
         _editContext = new EditContext(_input);
-        _editContext.AddDataAnnotationsValidation();
+        _editContext.EnableDataAnnotationsValidation(ServiceProvider);
 
         var currentUri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
         var currentQuery = QueryHelpers.ParseQuery(currentUri.Query);
